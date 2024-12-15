@@ -46,10 +46,8 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findByProductId(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with productId " + productId));
 
-        // ModelMapper kullanarak updatedProductDto'daki alanları product'a kopyalayın
         modelMapper.map(updatedProductDto, product);
 
-        // productCreatedDate ve id alanlarını koruyun
         product.setProductCreatedDate(product.getProductCreatedDate());
         product.setId(product.getId());
 
@@ -72,6 +70,7 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Product not found with given details");
         }
     }
+
     public String findProductIdByDetails(String productName, String productDescription, double productPrice) {
         Optional<Product> product = productRepository.findByProductNameAndProductDescriptionAndProductPrice(productName, productDescription, productPrice);
         if (product.isPresent()) {

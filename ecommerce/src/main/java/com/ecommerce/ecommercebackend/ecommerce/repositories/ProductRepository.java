@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
+//burada biz MongoRepository'i kullanarak direkt onun methodlarını inheritance alırız
 @Repository()
 public interface ProductRepository extends MongoRepository<Product, String> {
     Optional<Product> findByProductId(String id);

@@ -6,9 +6,10 @@ import com.ecommerce.ecommercebackend.ecommerce.entity.Product;
 import java.util.List;
 
 public interface ProductService {
-    public List<ProductDto> getAllProducts();
-    public ProductDto getProductById(String productId);
-    public ProductDto addProduct(ProductDto productDto);
-    public ProductDto updateProduct(String productId, ProductDto productDto);
-    public void deleteProduct(String productId);
+    List<ProductDto> getAllProducts();
+    ProductDto getProductById(String productId);
+    ProductDto addProduct(ProductDto productDto);
+    ProductDto updateProduct(String productId, ProductDto productDto);
+    void deleteProduct(String productId);
+
 }

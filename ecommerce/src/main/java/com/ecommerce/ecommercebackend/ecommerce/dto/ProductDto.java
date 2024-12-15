@@ -1,15 +1,23 @@
 package com.ecommerce.ecommercebackend.ecommerce.dto;
 
 import lombok.Data;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 //güvenlik açığı vermemek için bu katmanı oluşturuyoruz, service ve controller ile bursaı iletişime geçecek
 //burası ileyse entity iletişime geçecek
 @Data
 public class ProductDto {
-    //private String productId;
+    //Bazı validasyonlar ile kontolleri sağlıyoruz
+    @NotEmpty(message = "Product name cannot be empty")
     private String productName;
-    private String productDescription;
-    private double productPrice;
 
+    @NotEmpty(message = "Product description cannot be empty")
+    private String productDescription;
+
+    @NotNull(message = "Product price cannot be null")
+    private double productPrice;
 
     public double getProductPrice() {
         return productPrice;

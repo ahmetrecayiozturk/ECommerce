@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -21,7 +22,7 @@ public class ProductController {
     }
 
     @PostMapping("save")
-    public ResponseEntity<ProductDto> saveProduct(@RequestBody ProductDto productDto) {
+    public ResponseEntity<ProductDto> saveProduct(@Valid @RequestBody ProductDto productDto) {
         try {
             ProductDto savedProduct = productServiceImpl.addProduct(productDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
@@ -31,7 +32,7 @@ public class ProductController {
     }
 
     @PutMapping("update/{productId}")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable String productId, @RequestBody ProductDto productDto) {
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable String productId, @Valid @RequestBody ProductDto productDto) {
         try {
             ProductDto updatedProduct = productServiceImpl.updateProduct(productId, productDto);
             return ResponseEntity.ok(updatedProduct);
@@ -41,7 +42,7 @@ public class ProductController {
     }
 
     @DeleteMapping("delete")
-    public ResponseEntity<String> delete(@RequestBody ProductDto productDto) {
+    public ResponseEntity<String> delete(@Valid @RequestBody ProductDto productDto) {
         try {
             String productId = productServiceImpl.findProductIdByDetails(
                     productDto.getProductName(),
@@ -64,9 +65,8 @@ public class ProductController {
         }
     }
 
-    //post'ta biz json halinde atarken istekleri get'te pathvariable olarak atıyoruz
     @PostMapping("getproductid")
-    public ResponseEntity<String> findProductIdByDetails(@RequestBody ProductDto productDto) {
+    public ResponseEntity<String> findProductIdByDetails(@Valid @RequestBody ProductDto productDto) {
         try {
             String productId = productServiceImpl.findProductIdByDetails(
                     productDto.getProductName(),
@@ -82,6 +82,16 @@ public class ProductController {
     public ResponseEntity<ProductDto> getProductByProductId(@PathVariable String productId) {
         try {
             ProductDto product = productServiceImpl.getProductById(productId);
+            return ResponseEntity.ok(product);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @GetMapping("findbydetails")
+    public ResponseEntity<ProductDto> findProductByDetails(@RequestParam String productName, @RequestParam String productDescription, @RequestParam double productPrice) {
+        try {
+            ProductDto product = productServiceImpl.findProductByDetails(productName, productDescription, productPrice);
             return ResponseEntity.ok(product);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
