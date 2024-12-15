@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-
+//controller katmanı service ve dto ile iletişimdedir
 @RestController
 @RequestMapping("/api/product/")
 public class ProductController {
@@ -78,20 +78,10 @@ public class ProductController {
         }
     }
 
-    @GetMapping("getbyproductid/{productId}")
+    @GetMapping("getproductbyid/{productId}")
     public ResponseEntity<ProductDto> getProductByProductId(@PathVariable String productId) {
         try {
             ProductDto product = productServiceImpl.getProductById(productId);
-            return ResponseEntity.ok(product);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-
-    @GetMapping("findbydetails")
-    public ResponseEntity<ProductDto> findProductByDetails(@RequestParam String productName, @RequestParam String productDescription, @RequestParam double productPrice) {
-        try {
-            ProductDto product = productServiceImpl.findProductByDetails(productName, productDescription, productPrice);
             return ResponseEntity.ok(product);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-//güvenlik açığı vermemek için bu katmanı oluşturuyoruz, service ve controller ile bursaı iletişime geçecek
+//güvenlik açığı vermemek için bu katmanı oluşturuyoruz, service ve controller ile burası iletişime geçecek
 //burası ileyse entity iletişime geçecek
 @Data
 public class ProductDto {
