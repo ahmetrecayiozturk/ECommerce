@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,51 +27,65 @@ public class ProductServiceImpl implements ProductService {
     private ModelMapper modelMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductDto> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        return products.stream()
-                .map(product -> modelMapper.map(product, ProductDto.class))
-                .collect(Collectors.toList());
+          List<Product> products = productRepository.findAll();
+          return products.stream()
+                   .map(product -> modelMapper.map(product, ProductDto.class))
+                   .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDto getProductById(String productId) {
-        logger.info("Fetching product with ID: {}", productId);
-        //modelmapper kullanılıyor
-        Product product = productRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with productId " + productId));
-        return modelMapper.map(product, ProductDto.class);
+            logger.info("Fetching product with ID: {}", productId);
+            //modelmapper kullanılıyor
+            Product product = productRepository.findByProductId(productId)
+                .orElseThrow(() -> {
+                    logger.error("Product not found with productId: {}", productId);
+                    return new ProductNotFoundException("Product not found with productId " + productId);
+                });
+            return modelMapper.map(product, ProductDto.class);
     }
 
     @Override
+    @Transactional
     public ProductDto addProduct(ProductDto productDto) {
-        Product product = modelMapper.map(productDto, Product.class);
-        Product savedProduct = productRepository.save(product);
-        logger.info("Product saved with ID: {}", savedProduct.getProductId());
-        return modelMapper.map(savedProduct, ProductDto.class);
+            Product product = modelMapper.map(productDto, Product.class);
+            Product savedProduct = productRepository.save(product);
+            logger.info("Product saved with ID: {}", savedProduct.getProductId());
+            return modelMapper.map(savedProduct, ProductDto.class);
     }
 
     @Override
+    @Transactional
     public ProductDto updateProduct(String productId, ProductDto updatedProductDto) {
-        logger.info("Updating product with ID: {}", productId);
-        Product product = productRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with productId " + productId));
+            logger.info("Updating product with ID: {}", productId);
+            Product product = productRepository.findByProductId(productId)
+                    .orElseThrow(() -> {
+                        logger.error("Product not found with productId: {}", productId);
+                        return new ProductNotFoundException("Product not found with productId " + productId);
+                    });
 
-        modelMapper.map(updatedProductDto, product);
+            modelMapper.map(updatedProductDto, product);
 
-        product.setProductCreatedDate(product.getProductCreatedDate());
-        product.setId(product.getId());
+            product.setProductCreatedDate(product.getProductCreatedDate());
+            product.setId(product.getId());
 
-        Product updatedProduct = productRepository.save(product);
-        return modelMapper.map(updatedProduct, ProductDto.class);
+            Product updatedProduct = productRepository.save(product);
+            return modelMapper.map(updatedProduct, ProductDto.class);
     }
 
     @Override
+    @Transactional
     public void deleteProduct(String productId) {
-        logger.info("Deleting product with ID: {}", productId);
-        Product product = productRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with productId " + productId));
-        productRepository.delete(product);
+            logger.info("Deleting product with ID: {}", productId);
+            Product product = productRepository.findByProductId(productId)
+                    .orElseThrow(() -> {
+                        logger.error("Product not found with productId: {}", productId);
+                        return new ProductNotFoundException("Product not found with productId " + productId);
+                    });
+            productRepository.delete(product);
     }
 
     public String findProductIdByDetails(String productName, String productDescription, double productPrice) {
@@ -79,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
         if (product.isPresent()) {
             return product.get().getProductId();
         } else {
+            logger.error("Product not found with given details - Name: {}, Description: {}, Price: {}", productName, productDescription, productPrice);
             throw new ProductNotFoundException("Product not found with given details");
         }
     }
