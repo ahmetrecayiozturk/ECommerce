@@ -2,10 +2,12 @@ package com.ecommerce.ecommercebackend.ecommerce.services;
 
 import com.ecommerce.ecommercebackend.ecommerce.dto.ProductDto;
 import com.ecommerce.ecommercebackend.ecommerce.entity.Product;
+import com.ecommerce.ecommercebackend.ecommerce.exceptions.GlobalExceptionHandler;
 import com.ecommerce.ecommercebackend.ecommerce.exceptions.ProductNotFoundException;
 import com.ecommerce.ecommercebackend.ecommerce.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +28,11 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private GlobalExceptionHandler globalExceptionHandler;
+
     @Override
+    //transactional anatasyonu bizim birden çok repository ile çalışmamıza olanak verir
     @Transactional(readOnly = true)
     public List<ProductDto> getAllProducts() {
           List<Product> products = productRepository.findAll();
@@ -88,6 +94,8 @@ public class ProductServiceImpl implements ProductService {
             productRepository.delete(product);
     }
 
+    @Override
+    @Transactional
     public String findProductIdByDetails(String productName, String productDescription, double productPrice) {
         logger.info("Finding product ID with details - Name: {}, Description: {}, Price: {}", productName, productDescription, productPrice);
         Optional<Product> product = productRepository.findIdByProductNameAndProductDescriptionAndProductPrice(productName, productDescription, productPrice);

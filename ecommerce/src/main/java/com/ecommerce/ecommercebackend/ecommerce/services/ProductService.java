@@ -11,5 +11,5 @@ public interface ProductService {
     ProductDto addProduct(ProductDto productDto);
     ProductDto updateProduct(String productId, ProductDto productDto);
     void deleteProduct(String productId);
-
+    String findProductIdByDetails(String productName, String productDescription, double productPrice);
 }
