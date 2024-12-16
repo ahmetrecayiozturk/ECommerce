@@ -20,9 +20,9 @@ public class IyzicoConfig {
     @Bean
     public Options iyzicoOptions() {
         Options options = new Options();
-        options.setApiKey(apiKey);
-        options.setSecretKey(secretKey);
-        options.setBaseUrl(baseUrl);
+        options.setApiKey(this.apiKey);
+        options.setSecretKey(this.secretKey);
+        options.setBaseUrl(this.baseUrl);
         return options;
     }
 }
