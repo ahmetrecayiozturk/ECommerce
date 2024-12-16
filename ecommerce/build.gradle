@@ -15,6 +15,7 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -28,12 +29,13 @@ dependencies {
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final' // MapStruct çekirdek kütüphanesi
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final' // Kod üretici
 	implementation 'org.modelmapper:modelmapper:3.1.0' // ModelMapper kütüphanesi
-	//implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA bağımlılığı
 	implementation 'org.projectlombok:lombok' // Lombok bağımlılığı
 	annotationProcessor 'org.projectlombok:lombok' // Lombok annotation processor
 	implementation 'javax.validation:validation-api:2.0.1.Final'
 	implementation 'org.hibernate.validator:hibernate-validator:6.0.13.Final'
 	implementation 'org.glassfish:javax.el:3.0.0'
+	implementation 'com.github.iyzico:iyzipay-java-sdk:1.0.35'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 tasks.named('test') {
