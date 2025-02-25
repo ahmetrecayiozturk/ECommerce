@@ -1,10 +1,10 @@
 package org.ecommerce.payment.config;
 
-import io.iyzipay.Options;
+import com.iyzipay.Options;
+import org.ecommerce.payment.service.PaymentService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 @Configuration
 public class IyzicoConfig {
 
