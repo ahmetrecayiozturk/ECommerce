@@ -2,14 +2,17 @@ package org.ecommerce.product.controller;
 
 import org.ecommerce.product.dto.*;
 import org.ecommerce.product.exception.ProductNotFoundException;
+import org.ecommerce.product.service.MinioService;
 import org.ecommerce.product.service.ProductServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -17,18 +20,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/product")
 public class ProductController {
+    @Autowired
+    private ProductServiceImpl productServiceImpl;
 
-    private final ProductServiceImpl productServiceImpl;
+    @Autowired
+    private MinioService minioService;
 
     @Autowired
     public ProductController(ProductServiceImpl productServiceImpl) {
         this.productServiceImpl = productServiceImpl;
     }
-    //ürün ekleme
-    @PostMapping("/save")
-    public ResponseEntity<ProductDto> saveProduct(@Valid @RequestBody ProductDto productDto) {
+
+    @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductDto> saveProduct(
+            @RequestPart("product") @Valid ProductDto productDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         try {
-            ProductDto savedProduct = productServiceImpl.addProduct(productDto);
+            ProductDto savedProduct = productServiceImpl.addProduct(productDto, files);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -60,14 +68,25 @@ public class ProductController {
         }
     }
 
-    //ürünlerin hepsini getirme
-    @GetMapping("/getall")
-    public ResponseEntity<List<ProductDto>> getAllProducts() {
+    //ürünlerin hepsini getirme her sayfada 20 tane olacak şekilde
+    @GetMapping("/getallpoducts")
+    public ResponseEntity<Page<ProductDto>> getAllProducts(@RequestParam(defaultValue = "0") int page) {
         try {
-            List<ProductDto> products = productServiceImpl.getAllProducts();
+            Pageable pageable = PageRequest.of(page, 20);
+            Page<ProductDto> products = productServiceImpl.getAllProducts(pageable);
             return ResponseEntity.ok(products);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    //o ürüne ait resimlerin url'lerini getirme
+    @GetMapping("/getproductimageurls")
+    public ResponseEntity<List<String>> getProductImages(@RequestBody ProductIdRequest productIdRequest) {
+        try {
+            List<String> imageUrls = minioService.getFilesByProductId(productIdRequest.getProductId());
+            return ResponseEntity.ok(imageUrls);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
@@ -96,7 +115,7 @@ public class ProductController {
         }
     }
     //kategoriye göre sıralanmış productları getirme
-    @GetMapping("/getproductbycategory")
+    @GetMapping("/getproductsbycategory")
     public ResponseEntity<Page<ProductDto>> getProductByCategory(@RequestBody CategoryRequest categoryRequest,
                                                                  @RequestParam(defaultValue = "0") int page) {
         try {
@@ -110,7 +129,8 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/getproductbyfilterandsort")
+    //filtre ve sıralamaya göre productları getirme
+    @GetMapping("/getproductsbyfilterandsort")
     public ResponseEntity<Page<ProductDto>> getProductByFilterAndSort(@RequestBody FilterRequest filterRequest,
                                                                       @RequestParam(defaultValue = "0") int page) {
         try {

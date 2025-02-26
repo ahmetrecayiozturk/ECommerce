@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 //güvenlik açığı vermemek için bu katmanı oluşturuyoruz, service ve controller ile burası iletişime geçecek
 //burası ileyse entity iletişime geçecek
@@ -37,5 +38,8 @@ public class ProductDto {
     @Nullable
     private LocalDateTime productCreatedDate;
 
+    @NotBlank(message = "imageUrl cannot be empty")
+    @Pattern(regexp = "^[a-zA-Z0-9 ]+$")
+    private List<String> imageUrl;
 
 }

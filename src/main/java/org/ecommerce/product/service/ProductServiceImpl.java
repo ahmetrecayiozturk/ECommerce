@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.Optional;
@@ -35,16 +36,20 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private GlobalExceptionHandler globalExceptionHandler;
 
+    @Autowired
+    private MinioService minioService;
+    //tüm productları getirme
+
     @Override
     //transactional anatasyonu bizim birden çok repository ile çalışmamıza olanak verir
     @Transactional(readOnly = true)
-    public List<ProductDto> getAllProducts() {
-          List<Product> products = productRepository.findAll();
-          return products.stream()
-                   .map(product -> modelMapper.map(product, ProductDto.class))
-                   .collect(Collectors.toList());
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
+        Page<Product> products = productRepository.findAll(pageable);
+         return products.map(product -> modelMapper.map(product, ProductDto.class));
+
     }
 
+    //id'ye göre product getirme
     @Override
     @Transactional(readOnly = true)
     public ProductDto getProductById(String productId) {
@@ -58,15 +63,28 @@ public class ProductServiceImpl implements ProductService {
             return modelMapper.map(product, ProductDto.class);
     }
 
+    //ekleme
     @Override
     @Transactional
-    public ProductDto addProduct(ProductDto productDto) {
-            Product product = modelMapper.map(productDto, Product.class);
-            Product savedProduct = productRepository.save(product);
-            logger.info("Product saved with ID: {}", savedProduct.getId());
-            return modelMapper.map(savedProduct, ProductDto.class);
+    public ProductDto addProduct(ProductDto productDto, List<MultipartFile> files) {
+        // Product nesnesini DTO'dan dönüştür
+        Product product = modelMapper.map(productDto, Product.class);
+
+        // Önce MongoDB'ye kaydet, ID oluşsun
+        Product savedProduct = productRepository.save(product);
+        logger.info("Product saved with ID: {}", savedProduct.getId());
+
+        // MinIO'ya dosyaları yükle ve URL'leri al
+        if (files != null && !files.isEmpty()) {
+            List<String> imageUrls = minioService.uploadFiles(savedProduct.getId(), files);
+            savedProduct.setImageUrls(imageUrls); // imageUrls ile güncelle
+            savedProduct = productRepository.save(savedProduct); // Güncellenmiş URL'ler ile tekrar kaydet
+        }
+
+        return modelMapper.map(savedProduct, ProductDto.class);
     }
 
+    //güncelleme
     @Override
     @Transactional
     public ProductDto updateProduct(String productId, ProductDto updatedProductDto) {
@@ -86,6 +104,7 @@ public class ProductServiceImpl implements ProductService {
             return modelMapper.map(updatedProduct, ProductDto.class);
     }
 
+    //silme
     @Override
     @Transactional
     public void deleteProduct(String productId) {
@@ -98,6 +117,7 @@ public class ProductServiceImpl implements ProductService {
             productRepository.delete(product);
     }
 
+    //Product Id'sini geri kalan tüm değerleri ile bulma
     @Override
     @Transactional
     public String findProductIdByDetails(ProductDto productDto) {
@@ -120,8 +140,7 @@ public class ProductServiceImpl implements ProductService {
         return products.map(product -> modelMapper.map(product, ProductDto.class));
     }
 
-
-
+    //filtreye göre product'ları getirme burada türü yani order'ı ne ise ona göre sıralanır
     public Page<ProductDto> listProductsBySortOrder(String sortOrder, Pageable pageable) {
         logger.info("Fetching products with sort order: {}", sortOrder);
         Sort sort = Sort.unsorted();
@@ -139,6 +158,8 @@ public class ProductServiceImpl implements ProductService {
                 sort = Sort.by(Sort.Direction.DESC, "productCreatedDate");
                 break;
         }
+        //burada pageable ve sort kullanılarak sıralama yapılır, bunlar pageable'de tanımlı
+        //fonksiyonlar olduğundan böyle bir kullanım yapılabilir
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
         Page<Product> products = productRepository.findAll(pageable);
         return products.map(product -> modelMapper.map(product, ProductDto.class));

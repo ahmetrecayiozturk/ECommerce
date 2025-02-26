@@ -15,8 +15,11 @@ import java.util.Optional;
 //burada biz MongoRepository'i kullanarak direkt onun methodlarını inheritance alırız
 @Repository()
 public interface ProductRepository extends MongoRepository<Product, String> {
+    //id'ye göre product getirme
     Optional<Product> findById(String id);
+    //isimlendirmesi zorunlu olarak böyle
     Optional<Product> findIdByProductNameAndCategoryAndProductDescriptionAndProductPrice(String productName, String category, String productDescription, double productPrice);
+    //kategoriye göre listeleme
     Page<Product> findProductsByCategory(String category, Pageable pageable);
     //Page<Product> findAll(Pageable pageable, Sort sort);
 

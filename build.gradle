@@ -27,6 +27,9 @@ dependencies {
 	// MongoDB Driver
 	implementation 'org.mongodb:mongodb-driver-sync:5.2.1'
 
+	// MinIO Client Library (MinIO ile çalışmak için)
+	implementation 'io.minio:minio:8.5.7'  // En güncel sürümü kontrol edebilirsin
+
 	// Development Tools
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
